@@ -27,7 +27,7 @@ test_the_artifact_is_not_compliant if {
 
 test_violations_name_each_failing_vuln_and_why if {
 	{[v.subject.id, v.check, v.cause] | some v in violations} == {
-		["SNYK-ALPINE321-ZLIB-13874461", "seen_before_now", "value"],
+		["SNYK-ALPINE321-ZLIB-13874461", "within_limit", "value"],
 		["SNYK-GOLANG-GOLANGORGXCRYPTOSSHAGENT-14059804", "within_limit", "value"],
 		["snyk:lic:pip:astroid:LGPL-2.1", "not_expired", "value"],
 	}
@@ -37,11 +37,18 @@ test_vuln_past_its_limit_shows_the_numbers_read if {
 	some v in violations
 	v.check == "within_limit"
 	v.inputs == [
-		{"name": "first_seen_ts plus $params.max_seconds_by_severity.medium", "value": 1748563200},
+		{"name": "days elapsed from first_seen_ts to now_ts", "value": 12},
 		{"name": "first_seen_ts", "value": 1747699200},
-		{"name": "$params.max_seconds_by_severity.medium", "value": 864000},
 		{"name": "now_ts", "value": 1748736000},
+		{"name": "$params.max_days_by_severity named by severity", "value": 10},
+		{"name": "severity", "value": "medium"},
 	]
+}
+
+test_vuln_first_seen_after_the_scan_fails_with_no_age if {
+	some v in violations
+	v.subject.id == "SNYK-ALPINE321-ZLIB-13874461"
+	v.inputs[0] == {"name": "days elapsed from first_seen_ts to now_ts", "value": null}
 }
 
 test_artifact_with_no_vulns_is_compliant if {
@@ -75,7 +82,15 @@ test_critical_vuln_on_day_zero_is_within_a_one_day_limit if {
 
 test_critical_vuln_on_its_limit_fails if {
 	r := report_for([vuln({"first_seen_ts": 1748649600})])
-	failed(r) == {["critical_age", "v-1", "within_limit", "value"]}
+	failed(r) == {["age", "v-1", "within_limit", "value"]}
+}
+
+test_age_is_not_rounded_to_whole_days if {
+	r := report_for([vuln({"first_seen_ts": 1748649601})])
+	r.compliant == true
+	some row in r.results
+	row.check == "within_limit"
+	row.inputs[0] == {"name": "days elapsed from first_seen_ts to now_ts", "value": 0.999988}
 }
 
 test_ignore_that_expires_at_the_scan_still_holds if {
@@ -88,9 +103,14 @@ test_forever_ignore_passes_whatever_the_age if {
 	r.compliant == true
 }
 
-test_unknown_severity_fails_instead_of_skipping_the_age_limit if {
+test_unknown_severity_fails_the_age_limit_as_absent if {
 	r := report_for([vuln({"severity": "unknown", "first_seen_ts": 0})])
-	failed(r) == {["readable", "v-1", "severity", "value"]}
+	failed(r) == {["age", "v-1", "within_limit", "absent"]}
+}
+
+test_ignored_vuln_passes_whatever_its_severity_as_in_the_original if {
+	r := report_for([vuln({"severity": "unknown", "first_seen_ts": 0, "ignore_expires_exists": true, "ignore_forever": true})])
+	r.compliant == true
 }
 
 test_ignore_flag_that_is_not_a_boolean_fails_instead_of_skipping_every_case if {
@@ -114,8 +134,8 @@ test_the_vulns_that_pass_are_allowed_on_their_own if {
 
 test_each_message_starts_with_the_id_of_its_vuln if {
 	policy.violations with input as {"vulns": vulns} == {
-		"SNYK-ALPINE321-ZLIB-13874461: high_age seen_before_now failed as value: first_seen_ts is at most now_ts",
-		"SNYK-GOLANG-GOLANGORGXCRYPTOSSHAGENT-14059804: medium_age within_limit failed as value: first_seen_ts plus $params.max_seconds_by_severity.medium is more than now_ts",
+		"SNYK-ALPINE321-ZLIB-13874461: age within_limit failed as value: days elapsed from first_seen_ts to now_ts is less than $params.max_days_by_severity named by severity",
+		"SNYK-GOLANG-GOLANGORGXCRYPTOSSHAGENT-14059804: age within_limit failed as value: days elapsed from first_seen_ts to now_ts is less than $params.max_days_by_severity named by severity",
 		"snyk:lic:pip:astroid:LGPL-2.1: ignore_not_expired not_expired failed as value: ignore_expires_ts is at least now_ts",
 	}
 }
