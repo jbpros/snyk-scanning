@@ -6,7 +6,7 @@ This folder holds `../snyk-vuln-compliance.rego` written with [ergo](https://git
 | -------------------------------- | ----------------------------------------------------------------------------- |
 | `snyk-vuln-compliance.yaml`      | the rules, one check per line                                                 |
 | `snyk-vuln-compliance.rego`      | `package policy`: runs the rules and gives `allow`, `violations` and `report` |
-| `ergo.rego`                      | ergo itself, copied from kosli-dev/ergo at `f94d9fd`                          |
+| `ergo.rego`                      | ergo itself, copied from kosli-dev/ergo at `0d570ff`                          |
 | `rego.params.aws-*.json`         | the same limits as `../rego.params.aws-*.json`, in seconds                    |
 | `snyk-vuln-compliance_test.rego` | tests, run by `run_tests.sh`                                                  |
 

@@ -2,7 +2,7 @@ description: Every vuln in the artifact is fixed within the limit for its severi
 subjects:
   vuln:
     from: vulns
-    id: full_id
+    identified_by: full_id
   unignored critical vuln:
     from: vuln whose ignore_expires_exists is false and severity is "critical"
   unignored high vuln:
