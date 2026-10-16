@@ -1,0 +1,8 @@
+{
+  "max_seconds_by_severity": {
+    "critical": 86400,
+    "high": 432000,
+    "medium": 864000,
+    "low": 2592000
+  }
+}
