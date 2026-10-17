@@ -10,18 +10,6 @@ subjects:
   vuln ignored until a date:
     from: '"ignored vuln" whose ignore_forever is false'
 requirements:
-  readable:
-    description: Every vuln says whether it is ignored
-    subject: vuln
-    min_subjects: 0
-    checks:
-      ignore_known: ignore_expires_exists is a boolean
-  ignore_readable:
-    description: Every ignored vuln says whether it is ignored forever
-    subject: ignored vuln
-    min_subjects: 0
-    checks:
-      forever_known: ignore_forever is a boolean
   age:
     description: A vuln with no .snyk ignore is fixed within the limit for its severity
     subject: unignored vuln

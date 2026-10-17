@@ -115,12 +115,12 @@ test_ignored_vuln_passes_whatever_its_severity_as_in_the_original if {
 
 test_ignore_flag_that_is_not_a_boolean_fails_instead_of_skipping_every_case if {
 	r := report_for([vuln({"ignore_expires_exists": "false", "first_seen_ts": 0})])
-	failed(r) == {["readable", "v-1", "ignore_known", "value"]}
+	failed(r) == {["age", "v-1", "$applies", "unusable"], ["ignore_not_expired", "v-1", "$applies", "unusable"]}
 }
 
 test_ignored_vuln_without_a_forever_flag_fails if {
 	r := report_for([object.remove(vuln({"ignore_expires_exists": true}), ["ignore_forever"])])
-	["ignore_readable", "v-1", "forever_known", "absent"] in failed(r)
+	failed(r) == {["ignore_not_expired", "v-1", "$applies", "absent"]}
 }
 
 test_the_artifact_is_not_allowed if {
@@ -141,5 +141,5 @@ test_each_message_starts_with_the_id_of_its_vuln if {
 }
 
 test_a_failure_about_no_vuln_in_particular_names_the_artifact if {
-	"artifact: readable $min_subjects failed as absent: vulns can be read" in policy.violations with input as {}
+	"artifact: age $min_subjects failed as absent: vulns can be read" in policy.violations with input as {}
 }
